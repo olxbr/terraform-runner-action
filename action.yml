@@ -4,6 +4,21 @@ inputs:
   terraform-version:
     description: Terraform version to be used
     default: 1.1
+  aws-cross-access-key-id:
+    description: "TBD"
+    required: true
+  aws-cross-secret-access-key:
+    description: "TBD"
+    required: true
+  aws-olx-prod-role:
+    description: "TBD"
+    required: true
+  aws-olx-prod-role-external-id:
+    description: "TBD"
+    required: true
+  token:
+    description: "TBD"
+    required: true
   aws-region:
     description: AWS region to be setup in the AWS credentials
     default: us-east-1
@@ -11,29 +26,35 @@ runs:
   using: composite
   steps:
     - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ env.AWS_CROSS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.AWS_CROSS_SECRET_ACCESS_KEY }}
-          role-duration-seconds: 1200
-          role-to-assume: ${{ env.AWS_CK_OLX_PROD_ROLE }}
-          role-external-id: ${{ env.AWS_CK_OLX_PROD_ROLE_EXTERNAL_ID }}
-          aws-region: ${{ inputs.aws-region }}
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ inputs.aws-cross-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-cross-secret-access-key }}
+        role-duration-seconds: 1200
+        role-to-assume: ${{ inputs.aws-ck-olx-prod-role }}
+        role-external-id: ${{ inputs.aws-ck-olx-prod-role-external-id }}
+        aws-region: ${{ inputs.aws-region }}
 
     - uses: actions/checkout@v2
     - uses: hashicorp/setup-terraform@v1
       with:
         terraform_version: ${{ inputs.terraform-version }}
 
-    - name: Init
+    - name: Git config
       run: |
         git config --local --remove-section http."https://github.com/"
-        git config --global url."https://ci:${{ env.GH_TOKEN }}@github.com/olxbr".insteadOf "https://github.com/olxbr"
+        git config --global url."https://ci:${{ inputs.token }}@github.com/olxbr".insteadOf "https://github.com/olxbr"
+      shell: bash
+
+    - name: Init
+      run: |
         make init
+      shell: bash
 
     - name: Plan
       run: |
         make plan
+      shell: bash
 
     #- name: Appy
     #  run: |
