@@ -1,0 +1,40 @@
+name: Terraform Runner Action
+description: Action which does the github and aws setup to apply terraform plans
+inputs:
+  terraform-version:
+    description: Terraform version to be used
+    default: 1.1
+  aws-region:
+    description: AWS region to be setup in the AWS credentials
+    default: us-east-1
+runs:
+  using: composite
+  steps:
+    - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ env.AWS_CROSS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_CROSS_SECRET_ACCESS_KEY }}
+          role-duration-seconds: 1200
+          role-to-assume: ${{ env.AWS_CK_OLX_PROD_ROLE }}
+          role-external-id: ${{ env.AWS_CK_OLX_PROD_ROLE_EXTERNAL_ID }}
+          aws-region: ${{ inputs.aws-region }}
+
+    - uses: actions/checkout@v2
+    - uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: ${{ inputs.terraform-version }}
+
+    - name: Init
+      run: |
+        git config --local --remove-section http."https://github.com/"
+        git config --global url."https://ci:${{ env.GH_TOKEN }}@github.com/olxbr".insteadOf "https://github.com/olxbr"
+        make init
+
+    - name: Plan
+      run: |
+        make plan
+
+    - name: Appy
+      run: |
+        make apply
