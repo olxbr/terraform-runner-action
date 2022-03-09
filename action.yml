@@ -35,6 +35,6 @@ runs:
       run: |
         make plan
 
-    - name: Appy
-      run: |
-        make apply
+    #- name: Appy
+    #  run: |
+    #    make apply
