@@ -39,12 +39,9 @@ runs:
     - uses: hashicorp/setup-terraform@v1
       with:
         terraform_version: ${{ inputs.terraform-version }}
-
-    - name: Git config
-      run: |
-        git config --local --remove-section http."https://github.com/"
-        git config --global url."https://ci:${{ inputs.token }}@github.com/olxbr".insteadOf "https://github.com/olxbr"
-      shell: bash
+    - uses: fusion-engineering/setup-git-credentials@v2
+      with:
+        credentials: https://ci:{{ inputs.token }}@github.com
 
     - name: Init
       run: |
