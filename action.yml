@@ -31,17 +31,20 @@ runs:
         aws-access-key-id: ${{ inputs.aws-cross-access-key-id }}
         aws-secret-access-key: ${{ inputs.aws-cross-secret-access-key }}
         role-duration-seconds: 1200
-        role-to-assume: ${{ inputs.aws-ck-olx-prod-role }}
-        role-external-id: ${{ inputs.aws-ck-olx-prod-role-external-id }}
+        role-to-assume: ${{ inputs.aws-olx-prod-role }}
+        role-external-id: ${{ inputs.aws-olx-prod-role-external-id }}
         aws-region: ${{ inputs.aws-region }}
 
     - uses: actions/checkout@v2
     - uses: hashicorp/setup-terraform@v1
       with:
         terraform_version: ${{ inputs.terraform-version }}
-    - uses: fusion-engineering/setup-git-credentials@v2
-      with:
-        credentials: https://ci:{{ inputs.token }}@github.com
+
+    - name: Git config
+      run: |
+        git config --local --remove-section http."https://github.com/"
+        git config --global url."https://ci:${{ inputs.token }}@github.com/olxbr".insteadOf "https://github.com/olxbr"
+      shell: bash
 
     - name: Init
       run: |
